@@ -44,6 +44,7 @@
 */
 /**************************************2020.10.17 高成鑫 1*********************************************/
 #include <stdio.h>
+#include "gpio.h"
 /************************************2020.10.17 高成鑫 1 end*******************************************/
 /* USER CODE END Includes */
 
@@ -85,7 +86,6 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
   
 
@@ -117,6 +117,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    
     /********************************************2020.10.17 高成鑫 1 begin**************************************************/
     if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0))
       printf("Hello\n");

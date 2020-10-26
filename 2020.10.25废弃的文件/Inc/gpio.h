@@ -38,12 +38,14 @@
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void delay_us(uint16_t i);              //延时1us的函数
-uint8_t DS18B20_Check(void);            //检测是否存在DS18B20
-void DS18B20_Start(void);               //开始温度转换
-uint16_t DS18B20_Get_Temp(void);        //获得温度
-void DS18B20_Write_Byte(uint8_t dat);   //写一个字节到DS18B20  dat：要写入的字节  
+/*********************************************2020.10.18 高成鑫 1 begin**************************************************/
+void delay_us(uint16_t i);                      //延时1us的函数
+uint8_t DS18B20_Check(void);                    //检测是否存在DS18B20
+void DS18B20_Start(void);                       //开始温度转换
+uint16_t DS18B20_Get_Temp(void);                //获得温度
+void DS18B20_Write_Byte(uint8_t dat);           //写一个字节到DS18B20  dat：要写入的字节  
 uint8_t DS18B20_Read_Byte(void);             //从DS18B20读取一个字节  返回值：读到的数据
+/**********************************************2020.10.18 高成鑫 1 end**************************************************/
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -40,21 +40,15 @@
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 /*********************************************2020.10.18 高成鑫 1 begin**************************************************/
-void delay_us(uint16_t i)
-{
-    uint32_t temp;
-    //SysTick->LOAD=9*i;                          //设置重装数值, 72MHZ时
-    SysTick->LOAD = 27 * i / 2;         //我们的时钟APB2为108MHz
-    //SysTick->CTRL=0X01;                         //使能，减到零是无动作，采用外部时钟源
-    SysTick->CTRL=0X01;
-    SysTick->VAL=0;                             //清零计数器
-    do
-    {
-        temp=SysTick->CTRL;                     //读取当前倒计数值
-    }
-    while((temp&0x01)&&(!(temp&(1<<16))));      //等待时间到达
-    SysTick->CTRL=0;                            //关闭计数器
-    SysTick->VAL=0;                             //清空计数器
+//延时函数在simulator下测试，delay_us(1)的CCSTEP=216,在216MHzCPU下是1us
+void delay_us(uint16_t time)            
+{    
+   uint16_t i=0;  
+   while(time--)
+   {
+      i=23;  //自己定义
+      while(i--) ;    
+   }
 }
 //复位DS18B20
 void DS18B20_Rst(void)     
@@ -69,8 +63,10 @@ void DS18B20_Rst(void)
   
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);       //拉低DQ
     delay_us(750);    //拉低750us
+    //HAL_Delay(750);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);         //DQ=1 
     delay_us(15);     //15US
+    //HAL_Delay(15);
 }
 
 uint8_t DS18B20_Check(void)             //检测是否存在DS18B20
@@ -211,10 +207,21 @@ void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PI1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
