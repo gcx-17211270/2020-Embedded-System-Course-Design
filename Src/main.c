@@ -29,10 +29,10 @@
                                         图中未体现开启中断
 *IAR今日改动位置：*************************************************************************************************************************************************************************
 *main.c:
-*       USER CODE BEGIN PD---------------1.添加了两个互斥的#define，在使用时根据使用的时外部的模拟温度转换模块还是内部的时钟做出选择
-*       USER CODE BEGIN PV---------------2.增添了在使用IN0或内部温度测量时使用的全局变量
-*       USER CODE BEGIN 0----------------3.使用IN0和IN18时候的回调函数重写，他们的主要区别在于AD读数不同从而公式不同，还有，该公式正确性待检验
-*       USER CODE BEGIN 2----------------4.开启定时器TIM2以及ADC的中断（两个IN口都会使用）
+*       USER CODE BEGIN PD---------------1.
+*       USER CODE BEGIN PV---------------2.增添了在使用IN0测量时使用的全局变量
+*       USER CODE BEGIN 0----------------3.使用IN0时候的回调函数，温度计算公式正确性待检验
+*       USER CODE BEGIN 2----------------4.开启定时器TIM2以及ADC的中断
 *其他说明：
 *       缩进的printf表示调试过程中查看变量使用的，在正式使用中要被注释掉
 ************************************************************************************************************************************************************************************************/
@@ -47,10 +47,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 /***********************************************************************2020.10.26改动——————高成鑫 1 start************************************************************************************/
-//采用IN0或者IN18(或者更像是IN16？),将对应的宏定义取消注释即可
-#define __IN0_ADC_TRANS__
-//IN18是系统自带的模拟温度传感器
-//#define __IN18_TEMPERATURE_SENSOT__
+
 /***********************************************************************2020.10.26改动——————高成鑫 1 end**************************************************************************************/
 /* USER CODE END PD */
 
@@ -60,32 +57,31 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc3;
 
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 /***********************************************************************2020.10.26改动——————高成鑫 2 start************************************************************************************/
-#ifdef __IN0_ADC_TRANS__
-    double AD_Value[100];
-    double temperature;               //为了读取小数，是实际温度*100
-    uint8_t index;
-#endif
-
-#ifdef __IN18_TEMPERATURE_SENSOT__
-    double AD_Value[100];
-    double temperature;               
-    uint8_t index;
-#endif
+double AD_Value[100];
+double temperature;               //为了读取小数，是实际温度*100
+uint16_t temp_index;            //温度信号的计数变量
 /***********************************************************************2020.10.26改动——————高成鑫 2 end**************************************************************************************/
 
+/***********************************************************************2020.10.28改动——————高成鑫 1 start************************************************************************************/
+uint16_t ch1[120], ch2[120];
+uint8_t ch1_index, ch2_index;              //红外信号的计数变量
+uint8_t ch_decode[14];
+/***********************************************************************2020.10.28改动——————高成鑫 1 end**************************************************************************************/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_ADC3_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,45 +89,31 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 /***********************************************************************2020.10.26改动——————高成鑫 3 start************************************************************************************/
-#ifdef __IN0_ADC_TRANS__
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-   AD_Value[index++] = HAL_ADC_GetValue(&hadc1);
-    if (index == 100)
+   AD_Value[temp_index++] = HAL_ADC_GetValue(&hadc3);
+    if (temp_index == 100)
     {
-      uint8_t i = 0;
+      uint16_t i = 0;
       double tempTemp = 0;
-      for (i = 0; i < 50; i++)
+      for (i = 0; i < temp_index; i++)
       {
         tempTemp += AD_Value[i];
       }
-      tempTemp /= 50;
-          printf("tempTemp:%lf\n",tempTemp);
-      temperature = (1480 - tempTemp * 3300 / 4096) / 4.3 + 25;
-      //T=12℃ tempTemp = 1890 = 0x762                   //为什么IN0的AD转换结果和IN18的结果相差一倍？
-          printf("temperature:%lf°C\n",temperature);
-      index = 0;
+      tempTemp /= temp_index;
+          //printf("tempTemp:%lf\n",tempTemp);
+      //temperature = (1480 - tempTemp * 3300 / 4096) / 4.3 + 25;
+      temperature = ((tempTemp - 1800) * 3300 / 4096) / 57.0958 + 12;
+      //T是室外温度，或许不代表传感器测量地方的温度，tempTemp是AD采样传回的数值，认为晚上的温度更接近传感器温度
+      //T=12℃（凌晨2点） tempTemp = 1890 = 0x762                   //为什么IN0的AD转换结果和IN18的结果相差一倍？
+      //T=14.5℃(早上10点) tempTemp:2005.400000
+      //T=17.4℃ tempTemp 2107.03        （在宿舍测得，可能阳光直射温度较高）
+      //T=17.7℃ temTemp 1795~1801       //在思西测的，可能温度偏低
+          //printf("temperature:%lf°C\n",temperature);
+      temp_index = 0;
     }
 }
-#endif
-
-#ifdef __IN18_TEMPERATURE_SENSOT__
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-    AD_Value[index++] = HAL_ADC_GetValue(&hadc1);
-    if (index == 100)
-    {
-      uint8_t i = 0;
-      double tempTemp = 0;
-      for (i = 0; i < 50; i++)
-      {
-        tempTemp += AD_Value[i];
-      }
-      tempTemp /= 50;
-          printf("tempTemp:%lf\n",tempTemp);
-      temperature = (760 - tempTemp*3300/4096)/2.5+25;
-      //T=12℃ tempTemp = 950 = 0x3B6
-          printf("temperature:%lf°C\n",temperature);
 
 //从F746芯片参考手册 413页 温度（单位为 °C）= {(VSENSE – V25) / Avg_Slope} + 25 
 //      其中：
@@ -149,11 +131,60 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 //              the internal temperature sensor is mainly suitable for applications that detect 
 //                temperature changes instead of absolute temperatures. If an accurate temperature
 //                  reading is needed, then an external temperature sensor part should be used.
-      index = 0;
-    }
-}
-#endif
+
+
 /***********************************************************************2020.10.26改动——————高成鑫 3 end**************************************************************************************/
+
+/***********************************************************************2020.10.28改动——————高成鑫 1 start************************************************************************************/
+ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+ {
+    if(htim == &htim2)
+    {
+      if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+      {
+          ch1[ch1_index] = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_1);
+          if (ch1[ch1_index] < 2300 && ch1[ch1_index] > 800)
+          {
+            if (ch1[ch1_index] < 2300 && ch1[ch1_index] > 2100)
+              ch1[ch1_index] = 1;
+            else 
+              ch1[ch1_index] = 0;
+            
+            if (ch1_index == 111)
+            {
+              uint8_t i = 0, j = 0;
+              for (i = 0; i < 14; i++)
+                for (j = 0; j < 8; j++)
+                {
+                  ch_decode[i] = ch_decode[i]<<1;
+                  ch_decode[i] |= ch1[8 * i + j];
+                }
+              if (ch_decode[1] == 0x22 && ch_decode[4] == 0x40 && ch_decode[13] == 0x0D)
+              {
+                printf("开关状态是从关到开、制冷、风速低档\n");
+                printf("温度是：%lf℃\n",temperature);
+              }
+              else if (ch_decode[1] == 0x20 && ch_decode[4] == 0x00 && ch_decode[13] == 0xCB)
+                printf("开关状态是从开到关、制冷、风速低档\n");
+              else
+                printf("解码错误\n");
+            }
+            ch1_index++;
+          }
+          else 
+          {
+            ch1[ch1_index] = 0;
+            ch1_index = 0;
+          }
+      }
+//      if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+//      {
+//          ch2[ch2_index++] = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+//      }
+              //printf("%d %d\n", ch1_index, ch2_index);
+    }
+ }
+/***********************************************************************2020.10.28改动——————高成鑫 1 end**************************************************************************************/
 /* USER CODE END 0 */
 
 /**
@@ -185,13 +216,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC1_Init();
   MX_TIM2_Init();
+  MX_ADC3_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 /***********************************************************************2020.10.26改动——————高成鑫 4 start************************************************************************************/
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  HAL_ADC_Start_IT(&hadc1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_ADC_Start_IT(&hadc3);
 /***********************************************************************2020.10.26改动——————高成鑫 4 end**************************************************************************************/
+
+/***********************************************************************2020.10.28改动——————高成鑫 1 start************************************************************************************/
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
+/***********************************************************************2020.10.28改动——————高成鑫 1 end**************************************************************************************/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -254,52 +291,131 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief ADC1 Initialization Function
+  * @brief ADC3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_ADC1_Init(void)
+static void MX_ADC3_Init(void)
 {
 
-  /* USER CODE BEGIN ADC1_Init 0 */
+  /* USER CODE BEGIN ADC3_Init 0 */
 
-  /* USER CODE END ADC1_Init 0 */
+  /* USER CODE END ADC3_Init 0 */
 
   ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN ADC1_Init 1 */
+  /* USER CODE BEGIN ADC3_Init 1 */
 
-  /* USER CODE END ADC1_Init 1 */
+  /* USER CODE END ADC3_Init 1 */
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_CC2;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  hadc3.Instance = ADC3;
+  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc3.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
+  hadc3.Init.DiscontinuousConvMode = DISABLE;
+  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC2;
+  hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc3.Init.NbrOfConversion = 1;
+  hadc3.Init.DMAContinuousRequests = DISABLE;
+  hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc3) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_8;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC1_Init 2 */
+  /* USER CODE BEGIN ADC3_Init 2 */
 
-  /* USER CODE END ADC1_Init 2 */
+  /* USER CODE END ADC3_Init 2 */
+
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 108-1;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 100-1;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 10;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.BreakFilter = 0;
+  sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
+  sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
+  sBreakDeadTimeConfig.Break2Filter = 0;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
 
 }
 
@@ -316,8 +432,9 @@ static void MX_TIM2_Init(void)
   /* USER CODE END TIM2_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_IC_InitTypeDef sConfigIC = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -325,7 +442,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 108-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 100-1;
+  htim2.Init.Period = 0xFFFF;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -337,7 +454,15 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+  sSlaveConfig.TriggerFilter = 0;
+  if (HAL_TIM_SlaveConfigSynchro(&htim2, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -347,11 +472,17 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 10;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -368,11 +499,77 @@ static void MX_TIM2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOK_CLK_ENABLE();
+  __HAL_RCC_GPIOJ_CLK_ENABLE();
+  __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : PG13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PK6 PK5 PK4 PK1 
+                           PK2 PK0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_5|GPIO_PIN_4|GPIO_PIN_1 
+                          |GPIO_PIN_2|GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+  HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PG12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF9_LTDC;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PK3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PJ15 PJ11 PJ10 PJ9 
+                           PJ6 PJ4 PJ5 PJ3 
+                           PJ2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_11|GPIO_PIN_10|GPIO_PIN_9 
+                          |GPIO_PIN_6|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_3 
+                          |GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+  HAL_GPIO_Init(GPIOJ, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PI12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
 }
 
