@@ -3,13 +3,13 @@ AD_Value	<array>	0x20000018	double[100]
 ch1	<array>	0x20000354	uint16_t[120]	
 ch2	Error (col 1): Unknown or ambiguous symbol. ch2			
 ch2_index	Error (col 1): Unknown or ambiguous symbol. ch2_index			
-ch1_index	'p' (0x70)	0x20000340	uint8_t	
-ch_decode	<array>"?""	0x20000344	uint8_t[14]	
+ch1_index	'\0' (0x00)	0x20000340	uint8_t	
+ch_decode	<array>"? "	0x20000344	uint8_t[14]	
 [0]	'?' (0xA6)	0x20000344	uint8_t	
-[1]	'"' (0x22)	0x20000345	uint8_t	
+[1]	' ' (0x20)	0x20000345	uint8_t	
 [2]	'\0' (0x00)	0x20000346	uint8_t	
 [3]	'\0' (0x00)	0x20000347	uint8_t	
-[4]	'@' (0x40)	0x20000348	uint8_t	
+[4]	'\0' (0x00)	0x20000348	uint8_t	
 [5]	'`' (0x60)	0x20000349	uint8_t	
 [6]	'\0' (0x00)	0x2000034A	uint8_t	
 [7]	' ' (0x20)	0x2000034B	uint8_t	
@@ -18,4 +18,4 @@ ch_decode	<array>"?""	0x20000344	uint8_t[14]
 [10]	'\0' (0x00)	0x2000034E	uint8_t	
 [11]	'\0' (0x00)	0x2000034F	uint8_t	
 [12]	'?' (0x85)	0x20000350	uint8_t	
-[13]	'\r' (0x0D)	0x20000351	uint8_t	
+[13]	'?' (0xCB)	0x20000351	uint8_t	
