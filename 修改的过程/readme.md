@@ -6,7 +6,7 @@
 
 ### STM32CubeMax:
 
-ADC1进行了初始化---------------配置使用TIM2作为外部时钟源，具体配置如Img文件夹下![ADC](Img/20201027_023549_ADC1_Temp.png)(图中未体现开启中断)![定时器](Img/2020_1027_032224_TIM2.png)所示 ,ADC可选择使用IN0外接模拟温度转换，或者Temperature使用内部温度转换
+ADC1进行了初始化---------------配置使用TIM2作为外部时钟源，具体配置如Img文件夹下![ADC](../Img/20201027_023549_ADC1_Temp.png)(图中未体现开启中断)![定时器](2020-Embedded-System-Course-Design/Img/2020_1027_032224_TIM2.png)所示 ,ADC可选择使用IN0外接模拟温度转换，或者Temperature使用内部温度转换
 
 ### IAR今日改动位置：
 
