@@ -1,0 +1,18 @@
+Expression	Value	Location	Type	
+ch1_index	'\0' (0x00)	0x20002F48	uint8_t	
+ch1	<array>	0x20002F4C	uint16_t[120]	
+ch_decode	<array>"?2"	0x20002F38	uint8_t[14]	
+[0]	'?' (0xA6)	0x20002F38	uint8_t	
+[1]	'2' (0x32)	0x20002F39	uint8_t	
+[2]	'\0' (0x00)	0x20002F3A	uint8_t	
+[3]	'\0' (0x00)	0x20002F3B	uint8_t	
+[4]	'@' (0x40)	0x20002F3C	uint8_t	
+[5]	'`' (0x60)	0x20002F3D	uint8_t	
+[6]	'\0' (0x00)	0x20002F3E	uint8_t	
+[7]	' ' (0x20)	0x20002F3F	uint8_t	
+[8]	'\0' (0x00)	0x20002F40	uint8_t	
+[9]	'\0' (0x00)	0x20002F41	uint8_t	
+[10]	'\0' (0x00)	0x20002F42	uint8_t	
+[11]	'\0' (0x00)	0x20002F43	uint8_t	
+[12]	'€' (0x80)	0x20002F44	uint8_t	
+[13]	'.' (0x18)	0x20002F45	uint8_t	
