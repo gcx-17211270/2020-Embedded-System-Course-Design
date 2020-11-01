@@ -1,8 +1,8 @@
   /**
   ******************************************************************************
-  * @file    GUI_App.c
+  * @file    GUI_App.h
   * @author  MCD Application Team
-  * @brief   Simple demo drawing "Hello world"  
+  * @brief   Header for GUI_App.c   
   ******************************************************************************
   * @attention
   *
@@ -42,67 +42,14 @@
   *
   ******************************************************************************
   */
-#include "GUI_App.h"
-#include "GUI.h"
+#include "main.h"
+#include "GUIDRV_Lin.h"
 
-#include "DIALOG.h"
-extern  WM_HWIN CreateWindow(void);  
-  
+#ifndef GUI_APP_H
+#define GUI_APP_H
 
-void GRAPHICS_MainTask(void) {
+void GRAPHICS_MainTask(void);
 
-  /* 2- Create a Window using GUIBuilder */
-  CreateWindow();
- 
-/* USER CODE BEGIN GRAPHICS_MainTask */
-  /* User can implement his graphic application here */
-  /* Hello Word example */
-  GUI_Clear();
-  //    GUI_SetColor(GUI_WHITE);
-  //    GUI_SetFont(&GUI_Font32_1);
-  //    GUI_DispStringAt("Hello world!", (LCD_GetXSize()-150)/2, (LCD_GetYSize()-20)/2);
-//  static const char * _apStrings[] = {
-//  "Japanese:",
-//  "1 - \xe3\x82\xa8\xe3\x83\xb3\xe3\x82\xb3\xe3\x83\xbc"
-//    "\xe3\x83\x87\xe3\x82\xa3\xe3\x83\xb3\xe3\x82\xb0",
-//  "2 - \xe3\x83\x86\xe3\x82\xad\xe3\x82\xb9\xe3\x83\x88",
-//    "3 - \xe3\x82\xb5\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88",
-//    "English:",
-//  "1 - encoding",
-//    "2 - text",
-//    "3 - support",
-//    "\xe6\x88\x91\xe5\xae\xb6\xe5\xae\x9d\xe5\xae\x9d\xe6\x9c\x80\xe5\x8f\xaf\xe7\x88\xb1(\xe0\xb9\x91\xe2\x80\xa2 . \xe2\x80\xa2\xe0\xb9\x91)"
-//  };
-//  int i;
-//  GUI_Init();
-//  GUI_SetFont(&GUI_Font16_1HK);
-//  GUI_UC_SetEncodeUTF8();
-//  for (i = 0; i < GUI_COUNTOF(_apStrings); i++) {
-//    GUI_DispString(_apStrings[i]);
-//    GUI_DispNextLine();
-//  }
-//  while(1)
-//  {
-//    GUI_Delay(100);
-//  }
-  extern GRAPH_DATA_Handle hData;
-  extern void checkTouch(void);
-  extern int data;
-  //  uint16_t i;
-  while(1)
-  {
-    checkTouch();
-    //    for(i=0;i<400;i++)  
-    //      GRAPH_DATA_YT_AddValue(hData,data);
-    GUI_Delay(100);
-  }
-  
-  
-/* USER CODE END GRAPHICS_MainTask */
-  while(1)
-{
-      GUI_Delay(100);
-}
-}
+#endif /* GUI_APP_H */
 
 /*************************** End of file ****************************/

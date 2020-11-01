@@ -99,22 +99,16 @@
 *       变量名大写的表示字符串，小写的表示普通变量
 ***********************************************************************2020.10.30改动说明——————高成鑫 end***********************************************************************************/
 
-/**********************************************************************2020.10.31改动说明——————高成鑫 begin********************************************************************************
-*main.c
-*       USER CODE BEGIN 0----------------1.将所有中断回调函数及相关的变量定义，从main.c中移动到了stm32f7xx_it.c中，保持main.c的简单易读
-*stm32f7xx_it.c
-*       USER CODE BEGIN PD---------------2.移动了对开关状态的宏定义
-*       USER CODE BEGIN PV---------------3.对AD和红外解码中断函数中使用的全局变量的定义
-*       USER CODE BEGIN 1----------------4.AD采样和红外接收中断的回调函数
-***********************************************************************2020.10.31改动说明——————高成鑫 end***********************************************************************************/
-
 #include <stdio.h>
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+/***********************************************************************2020.10.30改动——————高成鑫 1 start************************************************************************************/
+#define SWITCH_ON 200                            //开关红外的命令
+#define SWITCH_OFF 201
+/***********************************************************************2020.10.30改动——————高成鑫 1 end**************************************************************************************/
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -139,11 +133,32 @@ RTC_HandleTypeDef hrtc;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim10;
-TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim12;
 
 /* USER CODE BEGIN PV */
+/***********************************************************************2020.10.26改动——————高成鑫 2 start************************************************************************************/
+double AD_Value[100];
+double temperature;                                    
+double tempTemp;
+uint16_t temp_index;                                    //温度信号的计数变量
+/***********************************************************************2020.10.26改动——————高成鑫 2 end**************************************************************************************/
+
+/***********************************************************************2020.10.28改动——————高成鑫 1 start************************************************************************************/
+uint16_t ch1[120], ch2[120];
+uint8_t ch1_index, ch2_index;                           //红外信号的计数变量
+uint8_t ch_decode[14];
+/***********************************************************************2020.10.28改动——————高成鑫 1 end**************************************************************************************/
+
+/***********************************************************************2020.10.28改动——————孙天一 1 start************************************************************************************/
+RTC_TimeTypeDef sTime;//定义时间结构体
+RTC_DateTypeDef sDate;
+/***********************************************************************2020.10.28改动——————孙天一 1 end************************************************************************************/
+/***********************************************************************2020.10.30改动——————高成鑫 2 start************************************************************************************/
+int menu = 0;                                           //红外开关的命令状态，用#define数字的表示
+
+extern int speed_set, temperature_set, model_set;
+/***********************************************************************2020.10.30改动——————高成鑫 2 end**************************************************************************************/
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -160,14 +175,163 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM12_Init(void);
-static void MX_TIM10_Init(void);
-static void MX_TIM11_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/***********************************************************************2020.10.26改动——————高成鑫 3 start************************************************************************************/
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+   AD_Value[temp_index++] = HAL_ADC_GetValue(&hadc3);
+    if (temp_index == 100)
+    {
+      uint16_t i = 0;
+      tempTemp = 0;
+      for (i = 0; i < temp_index; i++)
+      {
+        tempTemp += AD_Value[i];
+      }
+      tempTemp /= temp_index;
+          //printf("tempTemp:%lf\n",tempTemp);
+      //temperature = (1480 - tempTemp * 3300 / 4096) / 4.3 + 25;
+      //temperature = ((tempTemp - 1800) * 3300 / 4096) / 57.0958 + 12;
+      temperature = 0.035 * tempTemp - 55.9715;
+          //printf("temperature:%lf°C\n",temperature);
+      //T是室外温度，或许不代表传感器测量地方的温度，tempTemp是AD采样传回的数值，认为晚上的温度更接近传感器温度
+      //T=12℃（凌晨2点） tempTemp = 1890 = 0x762                  
+      //T=14.5℃(早上10点) tempTemp:2005.400000
+      //T=17.4℃ tempTemp 2107.03        （在宿舍测得，可能阳光直射温度较高）
+      //T=17.7℃ tempTemp 1795~1801       //在思西测的，可能温度偏低
+      //T=7℃ tempTemp 1840
+      //T=6℃ 1414(室外)
+      temp_index = 0;
+    }
+}
+
+//从F746芯片参考手册 413页 温度（单位为 °C）= {(VSENSE – V25) / Avg_Slope} + 25 
+//      其中：
+//      – V25 = 25 °C 时的 VSENSE 值
+//      – Avg_Slope = 温度与 VSENSE 曲线的平均斜率（以 mV/°C 或 μV/°C 表示）
+//      有关 V25 和 Avg_Slope 实际值的相关信息，请参见数据手册中的电气特性一节。
+      
+// STM32F746数据手册 43页
+//      The temperature sensor has to generate a voltage that varies linearly with temperature. 
+//      The conversion range is between 1.7 V and 3.6 V. The temperature sensor is internally 
+//        connected to the same input channel as VBAT, ADC1_IN18, which is used to convert the 
+//          sensor output voltage into a digital value. When the temperature sensor and VBAT 
+//            conversion are enabled at the same time, only VBAT conversion is performed.
+//      As the offset of the temperature sensor varies from chip to chip due to process variation, 
+//              the internal temperature sensor is mainly suitable for applications that detect 
+//                temperature changes instead of absolute temperatures. If an accurate temperature
+//                  reading is needed, then an external temperature sensor part should be used.
+
+
+/***********************************************************************2020.10.26改动——————高成鑫 3 end**************************************************************************************/
+
+/***********************************************************************2020.10.28改动——————高成鑫 2 start************************************************************************************/
+ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+ {
+    if(htim == &htim2)
+    {
+      //printf("I got it !\n");
+      if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+      {
+          ch1[ch1_index] = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_1);
+          if (ch1[ch1_index] < 2300 && ch1[ch1_index] > 800)
+          {
+            if (ch1[ch1_index] < 2300 && ch1[ch1_index] > 2100)
+              ch1[ch1_index] = 1;
+            else 
+              ch1[ch1_index] = 0;
+            
+            if (ch1_index == 111)
+            {
+              uint8_t i = 0, j = 0;
+              for (i = 0; i < 14; i++)
+                for (j = 0; j < 8; j++)         //10101010 01
+                {
+                  ch_decode[i] = ch_decode[i]<<1;
+                  ch_decode[i] |= ch1[8 * i + j];
+                }
+//              for (i = 0; i < 14; i++)
+//                printf("%x\t", ch_decode[i]);
+//              printf("\n");
+              //if (ch_decode[1] == 0x22 && ch_decode[4] == 0x40 && ch_decode[13] == 0x0D)
+              if (ch_decode[12] == 0x85)                        //开关机,对应制冷、制热、通风模式下的开机
+              {                
+                //if ((ch_decode[4] & 0xF0) != 0)
+                if ((ch_decode[4] == 0x40 && ch_decode[7] == 0x20) |
+                    (ch_decode[4] == 0xC0 && ch_decode[7] == 0x80) |
+                    (ch_decode[4] == 0x40 && ch_decode[7] == 0x40))
+                {
+                  //                printf("开关状态是从关到开，18℃、制冷、风速低档\n");
+                  //                printf("tempTemp:%lf\n",tempTemp);
+                  //                printf("温度是：%lf℃\n",temperature);
+                  menu = SWITCH_ON;
+                }
+                else
+                {
+                  //                printf("开关状态是从开到关，18℃、制冷、风速低档\n");
+                  //                printf("温度是：%lf℃\n",temperature);
+                  menu = SWITCH_OFF;
+                }
+              }
+              else if (ch_decode[12] == 0x80)                   //温度加
+              {
+                  temperature_set = (ch_decode[1] >> 4) + 16;
+              }
+              else if (ch_decode[12] == 0x81)                   //温度减
+              {
+                  temperature_set = (ch_decode[1] >> 4) + 16;
+              }
+              else if (ch_decode[12] == 0x86)                   //模式改变
+              {
+                if(ch_decode[4] == 0x40 && ch_decode[7] == 0x40) 
+                {
+                  model_set = 0;
+                }
+                else if(ch_decode[4] == 0xC0 && ch_decode[7] == 0x80)
+                {
+                  model_set = 1;
+                }
+                else if(ch_decode[4] == 0x40 && ch_decode[7] == 0x20)
+                {
+                  model_set = 2;
+                }
+              }
+              else if (ch_decode[12] == 0x84)                   //风速调节
+              {
+                if (ch_decode[5] == 0x60)               //风速低
+                  speed_set = 0;
+                else if (ch_decode[5] == 0x40)
+                  speed_set = 1;
+                else if (ch_decode[5] == 0x20)
+                  speed_set = 2;
+                else if (ch_decode[5] == 0xa0)
+                  speed_set = 3;
+              }  
+              else
+                printf("解码错误\n");
+            }
+            ch1_index++;
+          }
+          else 
+          {
+            ch1[ch1_index] = 0;
+            ch1_index = 0;
+          }
+      }
+//      if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+//      {
+//          ch2[ch2_index++] = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+//      }
+              //printf("%d %d\n", ch1_index, ch2_index);
+    }
+ }
+/***********************************************************************2020.10.28改动——————高成鑫 2 end**************************************************************************************/
 
 /***********************************************************************2020.10.29改动——————孙天一 2 start************************************************************************************/
 
@@ -229,8 +393,6 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM12_Init();
-  MX_TIM10_Init();
-  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   
 /***********************************************************************2020.10.26改动——————高成鑫 4 start************************************************************************************/
@@ -248,11 +410,6 @@ int main(void)
   HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);                     //对应蓝色制冷灯
   HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);                     //对应红色制热灯
 /***********************************************************************2020.10.30改动——————高成鑫 3 end**************************************************************************************/
-
-/***********************************************************************2020.10.28改动——————高成鑫 3 start************************************************************************************/
-  HAL_TIM_IC_Start_IT(&htim10, TIM_CHANNEL_1);
-/***********************************************************************2020.10.28改动——————高成鑫 3 end**************************************************************************************/
-
   /* USER CODE END 2 */
 
 /* Initialise the graphical hardware */
@@ -495,6 +652,15 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
+  
+  //  hrtc.Instance = RTC;
+  //  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+  //  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
+  //  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  //  {
+  //    Error_Handler();
+  //  }
+  
   /* USER CODE END Check_RTC_BKUP */
 
   /** Initialize RTC and set the Time and Date 
@@ -736,82 +902,6 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
-  * @brief TIM10 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM10_Init(void)
-{
-
-  /* USER CODE BEGIN TIM10_Init 0 */
-
-  /* USER CODE END TIM10_Init 0 */
-
-  TIM_IC_InitTypeDef sConfigIC = {0};
-
-  /* USER CODE BEGIN TIM10_Init 1 */
-
-  /* USER CODE END TIM10_Init 1 */
-  htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 108-1;
-  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 1000-1;
-  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_IC_Init(&htim10) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
-  if (HAL_TIM_IC_ConfigChannel(&htim10, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM10_Init 2 */
-
-  /* USER CODE END TIM10_Init 2 */
-
-}
-
-/**
-  * @brief TIM11 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM11_Init(void)
-{
-
-  /* USER CODE BEGIN TIM11_Init 0 */
-
-  /* USER CODE END TIM11_Init 0 */
-
-  /* USER CODE BEGIN TIM11_Init 1 */
-
-  /* USER CODE END TIM11_Init 1 */
-  htim11.Instance = TIM11;
-  htim11.Init.Prescaler = 0;
-  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim11.Init.Period = 0;
-  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM11_Init 2 */
-
-  /* USER CODE END TIM11_Init 2 */
 
 }
 

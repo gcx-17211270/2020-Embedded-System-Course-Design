@@ -19,8 +19,7 @@
 */
 
 // USER START (Optionally insert additional includes)
-#include<stdio.h>
-#include "stm32f7xx_hal.h"
+
 // USER END
 
 #include "DIALOG.h"
@@ -31,30 +30,40 @@
 *
 **********************************************************************
 */
-#define ID_WINDOW_0 (GUI_ID_USER + 0x00)
-#define ID_BUTTON_0 (GUI_ID_USER + 0x01)
-#define ID_TEXT_0 (GUI_ID_USER + 0x02)
-#define ID_TEXT_1 (GUI_ID_USER + 0x03)
-#define ID_TEXT_2 (GUI_ID_USER + 0x04)
-#define ID_TEXT_3 (GUI_ID_USER + 0x05)
-#define ID_TEXT_4 (GUI_ID_USER + 0x06)
-#define ID_TEXT_5 (GUI_ID_USER + 0x07)
-#define ID_TEXT_6 (GUI_ID_USER + 0x08)
-#define ID_TEXT_7 (GUI_ID_USER + 0x09)
-#define ID_TEXT_8 (GUI_ID_USER + 0x0A)
-#define ID_BUTTON_1 (GUI_ID_USER + 0x0B)
-#define ID_BUTTON_2 (GUI_ID_USER + 0x0C)
-#define ID_TEXT_9 (GUI_ID_USER + 0x0D)
-#define ID_BUTTON_3 (GUI_ID_USER + 0x0E)
-#define ID_TEXT_10 (GUI_ID_USER + 0x0F)
-#define ID_TEXT_11 (GUI_ID_USER + 0x10)
-#define ID_TEXT_12 (GUI_ID_USER + 0x11)
-#define ID_TEXT_13 (GUI_ID_USER + 0x12)
-#define ID_TEXT_14 (GUI_ID_USER + 0x13)
+#define ID_WINDOW_0    (GUI_ID_USER + 0x00)
+#define ID_BUTTON_0    (GUI_ID_USER + 0x01)
+#define ID_TEXT_0    (GUI_ID_USER + 0x02)
+#define ID_TEXT_1    (GUI_ID_USER + 0x03)
+#define ID_TEXT_2    (GUI_ID_USER + 0x04)
+#define ID_TEXT_3    (GUI_ID_USER + 0x05)
+#define ID_TEXT_4    (GUI_ID_USER + 0x06)
+#define ID_TEXT_5    (GUI_ID_USER + 0x07)
+#define ID_TEXT_6    (GUI_ID_USER + 0x08)
+#define ID_TEXT_7    (GUI_ID_USER + 0x09)
+#define ID_TEXT_8    (GUI_ID_USER + 0x0A)
+#define ID_BUTTON_1    (GUI_ID_USER + 0x0B)
+#define ID_BUTTON_2    (GUI_ID_USER + 0x0C)
+#define ID_TEXT_9    (GUI_ID_USER + 0x0D)
+#define ID_BUTTON_3    (GUI_ID_USER + 0x0E)
+#define ID_TEXT_10    (GUI_ID_USER + 0x0F)
+#define ID_TEXT_11    (GUI_ID_USER + 0x10)
+#define ID_BUTTON_4    (GUI_ID_USER + 0x11)
+#define ID_BUTTON_5    (GUI_ID_USER + 0x12)
+#define ID_TEXT_12    (GUI_ID_USER + 0x13)
+#define ID_TEXT_13    (GUI_ID_USER + 0x14)
+#define ID_TEXT_14    (GUI_ID_USER + 0x17)
+#define ID_TEXT_15    (GUI_ID_USER + 0x18)
+#define ID_TEXT_16    (GUI_ID_USER + 0x19)
+#define ID_TEXT_17    (GUI_ID_USER + 0x1A)
+#define ID_TEXT_18    (GUI_ID_USER + 0x1C)
+#define ID_BUTTON_6    (GUI_ID_USER + 0x1D)
+#define ID_BUTTON_7    (GUI_ID_USER + 0x1E)
 
 
 // USER START (Optionally insert additional defines)
 #include <stdio.h>
+#include "stm32f7xx_hal.h"
+#include <time.h>
 // USER END
 
 /*********************************************************************
@@ -74,26 +83,34 @@
 *       _aDialogCreate
 */
 static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
-  { WINDOW_CreateIndirect, "Window", ID_WINDOW_0, 0, 0, 480, 272, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "SPEED", ID_BUTTON_0, 260, 220, 160, 40, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "N_TEM", ID_TEXT_0, 83, 45, 80, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "N_HUM", ID_TEXT_1, 290, 45, 80, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "M", ID_TEXT_2, 104, 190, 80, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "S", ID_TEXT_3, 344, 190, 65, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "N_TEM", ID_TEXT_4, 30, 45, 50, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "N_HUM", ID_TEXT_5, 197, 45, 80, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "N_MODEL", ID_TEXT_6, 30, 190, 69, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "N_SPEED", ID_TEXT_7, 262, 190, 92, 20, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "SET_TEM", ID_TEXT_8, 30, 121, 67, 19, 0, 0x64, 0 },
-  { BUTTON_CreateIndirect, "+", ID_BUTTON_1, 168, 89, 120, 80, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "-", ID_BUTTON_2, 300, 89, 120, 80, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "print tem", ID_TEXT_9, 82, 105, 77, 46, 0, 0x64, 0 },
-  { BUTTON_CreateIndirect, "MODEL", ID_BUTTON_3, 23, 220, 160, 40, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "DATE", ID_TEXT_10, 226, 14, 122, 16, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "TIME", ID_TEXT_11, 330, 7, 108, 22, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Text", ID_TEXT_12, 137, 118, 26, 28, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Text", ID_TEXT_13, 133, 117, 17, 14, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Text", ID_TEXT_14, 177, 9, 67, 20, 0, 0x64, 0 },
+  { WINDOW_CreateIndirect, "Window", ID_WINDOW_0, 0, 4, 480, 272, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "SPEED_CHANGE", ID_BUTTON_0, 250, 210, 200, 40, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "TEM", ID_TEXT_0, 160, 43, 52, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "HUM", ID_TEXT_1, 369, 41, 57, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Air", ID_TEXT_2, 151, 183, 56, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Low", ID_TEXT_3, 387, 183, 65, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "NOW_TEMP", ID_TEXT_4, 30, 40, 123, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "NOW_HUMIDITY", ID_TEXT_5, 239, 41, 114, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "WORK_MODEL", ID_TEXT_6, 30, 183, 135, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "WORK_SPEED", ID_TEXT_7, 243, 183, 143, 20, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Temp_set", ID_TEXT_8, 30, 85, 104, 19, 0, 0x64, 0 },
+  { BUTTON_CreateIndirect, "rise", ID_BUTTON_1, 240, 79, 100, 38, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "reduce", ID_BUTTON_2, 350, 79, 100, 39, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "temp", ID_TEXT_9, 147, 88, 49, 23, 0, 0x64, 0 },
+  { BUTTON_CreateIndirect, "MODEL_CHANGE", ID_BUTTON_3, 30, 210, 200, 40, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "TIME", ID_TEXT_10, 300, 4, 150, 40, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Reservation", ID_TEXT_11, 30, 120, 113, 20, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Boot_rise", ID_BUTTON_4, 240, 135, 100, 38, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Boot_reduce", ID_BUTTON_5, 350, 135, 100, 38, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "Boot_model", ID_TEXT_12, 30, 153, 113, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "boot_set", ID_TEXT_13, 204, 124, 33, 47, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "o", ID_TEXT_14, 197, 90, 10, 15, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "C", ID_TEXT_15, 201, 91, 18, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "o", ID_TEXT_16, 207, 41, 12, 11, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "C", ID_TEXT_17, 211, 42, 16, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "DATA", ID_TEXT_18, 153, 4, 150, 40, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Status", ID_BUTTON_6, 150, 122, 50, 20, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Boot_model", ID_BUTTON_7, 150, 150, 50, 20, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -106,14 +123,19 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
 */
 
 // USER START (Optionally insert additional static code)
-uint8_t s=0,t=19;
 /********************************************************************2020.10.29改动——————孙天一 1 start*********************************************************************************/
+time_t timep;
+struct tm * timeUTC;
+struct tm * timeCN;
+
 int speed_set, temperature_set = 18, model_set;
 char* Speed_set[3] = {{"Low"}, {"Mid"}, {"High"}};
 char* Model_set[3] = {{"Air"}, {"Warm"}, {"Cold"}};
 
-extern RTC_TimeTypeDef sTime;//定义时间结构体
-extern RTC_DateTypeDef sDate;
+RTC_TimeTypeDef sTime;//定义时间结构体
+RTC_DateTypeDef sDate;
+RTC_TimeTypeDef sTimeButtonPress;
+extern RTC_HandleTypeDef hrtc;
 
 extern double temperature;
 extern int menu;                                           //红外开关的命令状态，用#define数字的表示
@@ -122,7 +144,20 @@ extern int menu_temp;
 extern RTC_HandleTypeDef hrtc;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim12;
-/********************************************************************2020.10.29改动——————孙天一 1 start*********************************************************************************/
+/********************************************************************2020.10.29改动——————孙天一 1 end *********************************************************************************/
+
+/********************************************************************2020.11.01改动——————高成鑫 1 start*********************************************************************************/
+const char* name1 = "&#x9AD8;&#x6210;&#x946B; &#x5B59;&#x5929;&#x4E00;";
+const char* name2 = "/xe9/xab/x98/xe6/x88/x90/xe9/x91/xab+/xe5/xad/x99/xe5/xa4/xa9/xe4/xb8/x80";
+const char* name3 = "\xe9\xab\x98\xe6\x88\x90\xe9\x91\xab+\xe5\xad\x99\xe5\xa4\xa9\xe4\xb8\x80";
+
+const char* test = "\xe5\x8f\xb0";
+
+int boot_status, boot_model, boot_time_set = 20, boot_temper_set = 25;
+char* Boot_status[2] = {{"OFF"}, {"ON"}};
+char* Boot_model[2] = {{"Time"}, {"Temper"}};
+/********************************************************************2020.11.01改动——————高成鑫 1 start*********************************************************************************/
+
 // USER END
 
 /*********************************************************************
@@ -135,154 +170,210 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   int     Id;
   // USER START (Optionally insert additional variables)
   // USER END
-  
+
   switch (pMsg->MsgId) {
   case WM_INIT_DIALOG:
     //
     // Initialization of 'Window'
     //
     hItem = pMsg->hWin;
-    WINDOW_SetBkColor(hItem, GUI_MAKE_COLOR(0x00C08080));
+    WINDOW_SetBkColor(hItem, GUI_MAKE_COLOR(0x00FFFF00));
     //
-    // Initialization of 'SPEED'
+    // Initialization of 'SPEED_CHANGE'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_0);
-    BUTTON_SetFont(hItem, GUI_FONT_20_1);
+    BUTTON_SetFont(hItem, GUI_FONT_16B_1);
     //
-    // Initialization of 'N_TEM'
+    // Initialization of 'TEM'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
-    TEXT_SetFont(hItem, GUI_FONT_24_1);
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-    TEXT_SetText(hItem, "2");
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'N_HUM'
+    // Initialization of 'HUM'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-    TEXT_SetText(hItem, "3");
-    TEXT_SetFont(hItem, GUI_FONT_24_1);
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'M'
+    // Initialization of 'Air'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-    TEXT_SetFont(hItem, GUI_FONT_24_1);
-    TEXT_SetText(hItem, "Air");
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'S'
+    // Initialization of 'Low'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-    TEXT_SetFont(hItem, GUI_FONT_24_1);
-    TEXT_SetText(hItem, "Low");
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'N_TEM'
+    // Initialization of 'NOW_TEMP'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
-    TEXT_SetText(hItem, "N_TEM");
-    TEXT_SetFont(hItem, GUI_FONT_16B_1);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of 'N_HUM'
+    // Initialization of 'NOW_HUMIDITY'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
-    TEXT_SetFont(hItem, GUI_FONT_16B_1);
-    TEXT_SetText(hItem, "N_HUM");
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_16B_1);
     //
-    // Initialization of 'N_MODEL'
+    // Initialization of 'WORK_MODEL'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
-    TEXT_SetText(hItem, "N_MODEL");
-    TEXT_SetFont(hItem, GUI_FONT_16B_1);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of 'N_SPEED'
+    // Initialization of 'WORK_SPEED'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_7);
-    TEXT_SetText(hItem, "N_SPEED");
-    TEXT_SetFont(hItem, GUI_FONT_16B_1);
+    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of 'SET_TEM'
+    // Initialization of 'Temp_set'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-    TEXT_SetText(hItem, "SET_TEM");
-    TEXT_SetFont(hItem, GUI_FONT_16B_1);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of '+'
+    // Initialization of 'rise'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_1);
-    BUTTON_SetText(hItem, "rise");
-    BUTTON_SetFont(hItem, GUI_FONT_20_1);
+    BUTTON_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of '-'
+    // Initialization of 'reduce'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_2);
-    BUTTON_SetText(hItem, "reduce");
-    BUTTON_SetFont(hItem, GUI_FONT_20_1);
+    BUTTON_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of 'print tem'
+    // Initialization of 'temp'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_9);
-    TEXT_SetFont(hItem, GUI_FONT_32_1);
-    TEXT_SetText(hItem, "18");
-    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetTextAlign(hItem, GUI_TA_RIGHT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'MODEL'
+    // Initialization of 'MODEL_CHANGE'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_3);
-    BUTTON_SetFont(hItem, GUI_FONT_20_1);
-    //
-    // Initialization of 'DATE'
-    //
-    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_10);
-    TEXT_SetText(hItem, "2020/10/29");
-    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-    TEXT_SetFont(hItem, GUI_FONT_13B_1);
+    BUTTON_SetFont(hItem, GUI_FONT_16B_1);
     //
     // Initialization of 'TIME'
     //
-    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_11);
-    TEXT_SetFont(hItem, GUI_FONT_32_1);
-    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-    TEXT_SetText(hItem, "00:09:30");
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_10);
+    TEXT_SetTextAlign(hItem, GUI_TA_RIGHT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
     //
-    // Initialization of 'Text'
+    // Initialization of 'Reservation'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_11);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
+    //
+    // Initialization of 'Boot_rise'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_4);
+    BUTTON_SetFont(hItem, GUI_FONT_16B_1);
+    //
+    // Initialization of 'Boot_reduce'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_5);
+    BUTTON_SetFont(hItem, GUI_FONT_16B_1);
+    //
+    // Initialization of 'Boot_model'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_12);
-    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-    TEXT_SetFont(hItem, GUI_FONT_20_1);
-    TEXT_SetText(hItem, "C");
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
     //
-    // Initialization of 'Text'
+    // Initialization of 'boot_set'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_13);
-    TEXT_SetText(hItem, "o");
-    TEXT_SetFont(hItem, GUI_FONT_10_1);
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetFont(hItem, GUI_FONT_16B_1);
+    TEXT_SetText(hItem, "20s");
     //
-    // Initialization of 'Text'
+    // Initialization of 'o'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_14);
-    TEXT_SetText(hItem, "TIME:");
+    TEXT_SetFont(hItem, GUI_FONT_8_1);
+    //
+    // Initialization of 'C'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_15);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_TOP);
+    //
+    // Initialization of 'o'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_16);
+    TEXT_SetFont(hItem, GUI_FONT_8_1);
+    //
+    // Initialization of 'C'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_17);
+    TEXT_SetFont(hItem, GUI_FONT_20B_1);
+    //
+    // Initialization of 'DATA'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_18);
     TEXT_SetTextAlign(hItem, GUI_TA_RIGHT | GUI_TA_VCENTER);
-    TEXT_SetFont(hItem, GUI_FONT_24_1);
+    TEXT_SetFont(hItem, GUI_FONT_20_1);
+    //
+    // Initialization of 'Status'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_6);
+    BUTTON_SetText(hItem, "OFF");
+    //
+    // Initialization of 'Boot_model'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+    BUTTON_SetText(hItem, "Time");
     // USER START (Optionally insert additional code for further widget initialization)
     WM_CreateTimer(pMsg->hWin, 0, 100, 0);
+    
+    
+    /*gettime1.c*/
+//    time_t timep;
+//    struct tm * timeUTC;
+//    struct tm * timeCN;
+    time(&timep); /*获取time_t类型的当前时间*/
+    /*用gmtime将time_t类型的时间转换为struct tm类型的时间，按没有经过时区转换的UTC时间
+    然后再用asctime转换为我们常见的格式 Fri Jan 11 17:25:24 2008
+    */
+    timeUTC = gmtime(&timep);
+    timeCN = timeUTC;
+    timeCN->tm_hour = (timeUTC->tm_hour + 8) % 24;
+    timeCN->tm_mday = (timeUTC->tm_mday + ((timeUTC->tm_hour - 8) > 0 ? 0 : 1)) % 30;
+    //因为十一月（当前）只有30日，所以上面的是%30，对于以后的时间就有可能不再适用，后面的月、年也不再处理
+//        printf("%s", asctime(timeCN));
+    
+    sTime.Hours = timeCN->tm_hour;
+    sTime.Minutes = timeCN->tm_min;
+    sTime.Seconds = timeCN->tm_sec;
+    sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+    
+    sDate.WeekDay = timeCN->tm_wday;
+    sDate.Month = timeCN->tm_mon + 1;
+    sDate.Date = timeCN->tm_mday;
+    sDate.Year = (timeCN->tm_year + 1900) % 1000;
+    
+    HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+    HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
     // USER END
     break;
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
     NCode = pMsg->Data.v;
     switch(Id) {
-    case ID_BUTTON_0: // Notifications sent by 'SPEED'
+    case ID_BUTTON_0: // Notifications sent by 'SPEED_CHANGE'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
         speed_set++;
         speed_set %= 3;
-        //char buf[8];
-        //sprintf(buf, "%s", Speed_set[speed_set]);
-        //TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_3), buf);
         TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_3), Speed_set[speed_set]);
         // USER END
         break;
@@ -290,11 +381,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
-        // USER START (Optionally insert additional code for further notification handling)
-        // USER END
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
       }
       break;
-    case ID_BUTTON_1: // Notifications sent by '+'
+    case ID_BUTTON_1: // Notifications sent by 'rise'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -309,11 +400,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
-        // USER START (Optionally insert additional code for further notification handling)
-        // USER END
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
       }
       break;
-    case ID_BUTTON_2: // Notifications sent by '-'
+    case ID_BUTTON_2: // Notifications sent by 'reduce'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -328,18 +419,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
-        // USER START (Optionally insert additional code for further notification handling)
-        // USER END
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
       }
       break;
-    case ID_BUTTON_3: // Notifications sent by 'MODEL'
+    case ID_BUTTON_3: // Notifications sent by 'MODEL_CHANGE'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
         model_set++;
         model_set %= 3;
-        //char buf[8];
-        //sprintf(buf, "%s", Model_set[model_set]);
         TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_2), Model_set[model_set]);
         // USER END
         break;
@@ -347,26 +436,107 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
-        // USER START (Optionally insert additional code for further notification handling)
-        // USER END
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
       }
       break;
-      // USER START (Optionally insert additional code for further Ids)
+    case ID_BUTTON_4: // Notifications sent by 'Boot_rise'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        if (boot_model == 0)
+          boot_time_set++;
+        else 
+          boot_temper_set++;
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
       // USER END
+      }
+      break;
+    case ID_BUTTON_5: // Notifications sent by 'Boot_reduce'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        if (boot_model == 0)
+        {
+          if (boot_time_set > 0)
+            boot_time_set--;
+        }
+        else 
+        {
+          if (boot_temper_set > 0)
+            boot_temper_set--;
+        }
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_6: // Notifications sent by 'Status'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        HAL_RTC_GetTime(&hrtc, &sTimeButtonPress, RTC_FORMAT_BIN);
+        boot_status++;
+        boot_status %= 2;
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_6);
+        BUTTON_SetText(hItem, Boot_status[boot_status]);
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_7: // Notifications sent by 'Boot_model'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        boot_model++;
+        boot_model %= 2;
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+        BUTTON_SetText(hItem, Boot_model[boot_model]);
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    // USER START (Optionally insert additional code for further Ids)
+    // USER END
     }
     break;
-    // USER START (Optionally insert additional message handling)
+  // USER START (Optionally insert additional message handling)
   case WM_TIMER:    //屏幕时间显示
     
     WM_RestartTimer(pMsg->Data.v,100);
     HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);    
-    
+    //    
     char buffer[8];
     sprintf(buffer,"%02d:%02d:%02d\r\n",sTime.Hours, sTime.Minutes, sTime.Seconds);
-    TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_11),buffer);
-    sprintf(buffer,"%01d/%02d/%02d\r\n",2000 + sDate.Year, sDate.Month, sDate.Date);
     TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_10),buffer);
+    sprintf(buffer,"%01d/%02d/%02d\r\n",2000 + sDate.Year, sDate.Month, sDate.Date);
+    TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_18),buffer);
+//    sprintf(buffer,"%s\r\n",asctime(timeCN));
+//    TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_10),buffer);
     
     sprintf(buffer, "%4.2f", temperature);
     TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_0),buffer);
@@ -374,15 +544,28 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     if (temperature_set < 18) temperature_set = 18;
     sprintf(buffer, "%d", temperature_set);
     TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_9), buffer);
-   
-    if (speed_set == 3) speed_set = 2;
-    sprintf(buffer, "%s", Speed_set[speed_set]);
-    TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_3), buffer);
     
-    sprintf(buffer, "%s", Model_set[model_set]);
-    TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_2), buffer);
-   
+    if (speed_set == 3) speed_set = 2;
+    TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_3), Speed_set[speed_set]);
+    
+    TEXT_SetText( WM_GetDialogItem(pMsg->hWin, ID_TEXT_2), Model_set[model_set]);
+        
+    if (boot_model == 0)
+    {
+      sprintf(buffer, "%ds", boot_time_set);
+    }
+    else 
+      sprintf(buffer, "%dC", boot_temper_set);
+    TEXT_SetText(WM_GetDialogItem(pMsg->hWin, ID_TEXT_13),buffer);
+    
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 200 + speed_set * 400);
+    
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_6);
+    BUTTON_SetText(hItem, Boot_status[boot_status]);
+    
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+    BUTTON_SetText(hItem, Boot_model[boot_model]);
+    
     if (model_set == 1)         //制热模式
     {
       uint16_t power;
@@ -437,17 +620,57 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     
     if (menu == SWITCH_ON) {
       HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);
+      if (boot_status)
+      {
+        if (boot_model == 0)      //定时开关
+        {
+          if (sTime.Seconds == (boot_time_set + sTimeButtonPress.Seconds) % 60)
+          {
+            menu = SWITCH_OFF;
+            boot_status = 0;
+          }
+        }
+        else                      //定温度开关
+        {
+          if ((int)temperature == boot_temper_set)
+          {
+            menu = SWITCH_OFF;
+            boot_status = 0;
+          }
+            
+        }
+      }
     }
     else if (menu == SWITCH_OFF){
       HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_RESET);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,0);
       __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_1,0);
       __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_2,0);
+      
+      if (boot_status)
+      {
+        if (boot_model == 0)      //定时开关
+        {
+          if (sTime.Seconds == (boot_time_set + sTimeButtonPress.Seconds) % 60)
+          {
+            menu = SWITCH_ON;
+            boot_status = 0;
+          }
+        }
+        else                      //定温度开关
+        {
+          if ((int)temperature == boot_temper_set)
+          {
+            menu = SWITCH_ON;
+            boot_status = 0;
+          }
+        }
+      }
     }
     else {};
     
     break;
-    // USER END
+  // USER END
   default:
     WM_DefaultProc(pMsg);
     break;
@@ -467,7 +690,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 WM_HWIN CreateWindow(void);
 WM_HWIN CreateWindow(void) {
   WM_HWIN hWin;
-  
+
   hWin = GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
   return hWin;
 }

@@ -1,8 +1,8 @@
   /**
   ******************************************************************************
-  * @file    GUI_App.c
+  * @file    GUIConf.c
   * @author  MCD Application Team
-  * @brief   Simple demo drawing "Hello world"  
+  * @brief   Display controller initialization 
   ******************************************************************************
   * @attention
   *
@@ -42,67 +42,50 @@
   *
   ******************************************************************************
   */
-#include "GUI_App.h"
+
 #include "GUI.h"
 
-#include "DIALOG.h"
-extern  WM_HWIN CreateWindow(void);  
-  
+/*********************************************************************
+*
+*       Defines, configurable
+*
+**********************************************************************
+*/
 
-void GRAPHICS_MainTask(void) {
+//
+// Define the available number of bytes available for the GUI
+//
+#define GUI_NUMBYTES  (1024) *  10   // x KByte
 
-  /* 2- Create a Window using GUIBuilder */
-  CreateWindow();
- 
-/* USER CODE BEGIN GRAPHICS_MainTask */
-  /* User can implement his graphic application here */
-  /* Hello Word example */
-  GUI_Clear();
-  //    GUI_SetColor(GUI_WHITE);
-  //    GUI_SetFont(&GUI_Font32_1);
-  //    GUI_DispStringAt("Hello world!", (LCD_GetXSize()-150)/2, (LCD_GetYSize()-20)/2);
-//  static const char * _apStrings[] = {
-//  "Japanese:",
-//  "1 - \xe3\x82\xa8\xe3\x83\xb3\xe3\x82\xb3\xe3\x83\xbc"
-//    "\xe3\x83\x87\xe3\x82\xa3\xe3\x83\xb3\xe3\x82\xb0",
-//  "2 - \xe3\x83\x86\xe3\x82\xad\xe3\x82\xb9\xe3\x83\x88",
-//    "3 - \xe3\x82\xb5\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88",
-//    "English:",
-//  "1 - encoding",
-//    "2 - text",
-//    "3 - support",
-//    "\xe6\x88\x91\xe5\xae\xb6\xe5\xae\x9d\xe5\xae\x9d\xe6\x9c\x80\xe5\x8f\xaf\xe7\x88\xb1(\xe0\xb9\x91\xe2\x80\xa2 . \xe2\x80\xa2\xe0\xb9\x91)"
-//  };
-//  int i;
-//  GUI_Init();
-//  GUI_SetFont(&GUI_Font16_1HK);
-//  GUI_UC_SetEncodeUTF8();
-//  for (i = 0; i < GUI_COUNTOF(_apStrings); i++) {
-//    GUI_DispString(_apStrings[i]);
-//    GUI_DispNextLine();
-//  }
-//  while(1)
-//  {
-//    GUI_Delay(100);
-//  }
-  extern GRAPH_DATA_Handle hData;
-  extern void checkTouch(void);
-  extern int data;
-  //  uint16_t i;
-  while(1)
-  {
-    checkTouch();
-    //    for(i=0;i<400;i++)  
-    //      GRAPH_DATA_YT_AddValue(hData,data);
-    GUI_Delay(100);
-  }
-  
-  
-/* USER CODE END GRAPHICS_MainTask */
-  while(1)
+/*********************************************************************
+*
+*       Static data
+*
+**********************************************************************
+*/
+
+/* 32 bit aligned memory area */
+static U32 extMem[GUI_NUMBYTES / 4];
+
+/*********************************************************************
+*
+*       Public code
+*
+**********************************************************************
+*/
+/*********************************************************************
+*
+*       GUI_X_Config
+*
+* Purpose:
+*   Called during the initialization process in order to set up the
+*   available memory for the GUI.
+*/
+void GUI_X_Config(void)
 {
-      GUI_Delay(100);
-}
+
+  GUI_ALLOC_AssignMemory(extMem, GUI_NUMBYTES);
+
 }
 
 /*************************** End of file ****************************/
